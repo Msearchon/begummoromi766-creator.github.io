@@ -23,9 +23,18 @@ body{
   z-index:9999;
   transition:opacity .5s;
 }
+.splash-box{
+  text-align:center;
+}
 .emoji-logo{
   font-size:140px;   /* BIG 🌐 */
   animation:zoom 1.5s infinite alternate;
+}
+.splash-text{
+  margin-top:10px;
+  font-size:28px;
+  font-weight:bold;
+  color:red;
 }
 @keyframes zoom{
   from{transform:scale(1);}
@@ -40,9 +49,10 @@ header{
 .header-logo{
   font-size:60px;
 }
-header h1{
-  margin:5px 0 0;
+.header-text{
+  text-align:center;
   font-size:32px;
+  font-weight:bold;
   color:red;
 }
 
@@ -126,12 +136,15 @@ button{
 
 <!-- SPLASH -->
 <div id="splash">
-  <div class="emoji-logo">🌐</div>
+  <div class="splash-box">
+    <div class="emoji-logo">🌐</div>
+    <div class="splash-text">M Search</div>
+  </div>
 </div>
 
 <header>
   <div class="header-logo">🌐</div>
-  <h1>M Search</h1>
+  <div class="header-text">M Search</div>
 </header>
 
 <div id="container">
@@ -153,7 +166,7 @@ button{
 </div>
 
 <script>
-/* hide splash */
+/* hide splash after 2 seconds */
 setTimeout(()=>{
   const s=document.getElementById("splash");
   s.style.opacity=0;
@@ -177,7 +190,7 @@ function search(){
  const link=document.getElementById("link");
 
  link.style.display="none";
- if(!q){ans.innerText="";return;}
+ if(!q){ans.innerText=""; return;}
 
  saveHistory(q); renderHistory();
 
@@ -201,7 +214,7 @@ function saveHistory(q){
 }
 function toggleHistory(){
  const b=document.getElementById("historyBox");
- b.style.display=b.style.display==="none"?"block":"none";
+ b.style.display = b.style.display==="none"?"block":"none";
  renderHistory();
 }
 function renderHistory(){
