@@ -3,132 +3,188 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>M Search</title>
 
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #ffffff;
-    text-align: center;
-  }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #fff;
+  text-align: center;
+}
 
-  .logo {
-    margin-top: 50px;
-    font-size: 42px;
-    font-weight: bold;
-  }
+.logo {
+  margin-top: 40px;
+  font-size: 40px;
+  font-weight: bold;
+}
+.logo span { color: red; }
 
-  .logo span {
-    color: red;
-  }
+.search-box {
+  margin: 20px auto;
+  width: 90%;
+  max-width: 400px;
+  display: flex;
+  border: 1px solid #ddd;
+  border-radius: 25px;
+  padding: 8px;
+}
 
-  .search-box {
-    margin: 25px auto;
-    width: 90%;
-    max-width: 400px;
-    display: flex;
-    border: 1px solid #ddd;
-    border-radius: 30px;
-    padding: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  }
+.search-box input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  padding: 10px;
+}
 
-  .search-box input {
-    border: none;
-    outline: none;
-    flex: 1;
-    font-size: 18px;
-    padding: 10px;
-  }
+.search-box button {
+  border: none;
+  background: #4285f4;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 20px;
+}
 
-  .search-box button {
-    border: none;
-    background: #34a853;
-    color: white;
-    font-size: 16px;
-    padding: 10px 18px;
-    border-radius: 20px;
-  }
+.actions {
+  margin-top: 10px;
+}
 
-  .qa-box {
-    width: 90%;
-    max-width: 420px;
-    margin: 30px auto;
-    text-align: left;
-  }
+.actions button {
+  border: none;
+  background: #f1f1f1;
+  padding: 8px 14px;
+  border-radius: 15px;
+  margin: 5px;
+}
 
-  .question {
-    color: red;
-    font-weight: bold;
-    font-size: 18px;
-    margin-top: 15px;
-  }
+.result-box {
+  width: 90%;
+  max-width: 420px;
+  margin: 25px auto;
+  text-align: left;
+  display: none;
+}
 
-  .answer {
-    color: #333;
-    font-size: 16px;
-    margin-top: 5px;
-  }
+.question {
+  color: red;
+  font-weight: bold;
+}
 
-  .icons {
-    margin: 40px 0;
-    display: flex;
-    justify-content: space-around;
-    font-size: 14px;
-  }
+.answer {
+  margin-top: 6px;
+  font-size: 16px;
+}
 
-  .icon {
-    width: 80px;
-  }
+.link {
+  margin-top: 10px;
+}
 
-  .icon div {
-    font-size: 36px;
-  }
+.link a {
+  color: blue;
+  text-decoration: underline;
+}
+
+.history-box {
+  width: 90%;
+  max-width: 420px;
+  margin: 20px auto;
+  text-align: left;
+  display: none;
+}
+
+.history-item {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+  font-size: 14px;
+}
 </style>
 </head>
 
 <body>
 
-  <!-- Logo -->
-  <div class="logo">
-    <span>M</span> Search
-  </div>
+<div class="logo"><span>M</span> Search</div>
 
-  <!-- Search Box -->
-  <form class="search-box" action="https://www.google.com/search" method="get">
-    <input type="text" name="q" placeholder="Search here..." required>
-    <button type="submit">Search</button>
-  </form>
+<div class="search-box">
+  <input type="text" id="query" placeholder="Search here..." />
+  <button onclick="search()">Search</button>
+</div>
 
-  <!-- Question & Answer Section -->
-  <div class="qa-box">
-    <div class="question">Q: What is Google?</div>
-    <div class="answer">Google is a search engine used to find information on the internet.</div>
+<div class="actions">
+  <button onclick="toggleHistory()">History</button>
+  <button onclick="clearHistory()">Clear History</button>
+</div>
 
-    <div class="question">Q: What is Software?</div>
-    <div class="answer">Software is a set of programs and instructions for a computer.</div>
+<div class="result-box" id="result">
+  <div class="question" id="qText"></div>
+  <div class="answer" id="aText"></div>
+  <div class="link" id="linkBox"></div>
+</div>
 
-    <div class="question">Q: What is Python?</div>
-    <div class="answer">Python is a programming language used for web, AI, and apps.</div>
-  </div>
+<div class="history-box" id="historyBox"></div>
 
-  <!-- Bottom Icons -->
-  <div class="icons">
-    <div class="icon">
-      <div>📘</div>
-      Books
-    </div>
-    <div class="icon">
-      <div>💻</div>
-      Computer
-    </div>
-    <div class="icon">
-      <div>✏️</div>
-      Pen
-    </div>
-  </div>
+<script>
+const data = {
+  "what is google": "Google is a search engine.",
+  "what is ui": "UI means User Interface.",
+  "what is software": "Software is a computer program."
+};
+
+let history = JSON.parse(localStorage.getItem("msearchHistory")) || [];
+
+function search() {
+  const q = document.getElementById("query").value.trim().toLowerCase();
+  if (!q) return;
+
+  saveHistory(q);
+
+  const result = document.getElementById("result");
+  const qText = document.getElementById("qText");
+  const aText = document.getElementById("aText");
+  const linkBox = document.getElementById("linkBox");
+
+  result.style.display = "block";
+  qText.innerText = "Q: " + q;
+
+  if (data[q]) {
+    aText.innerText = data[q];
+    linkBox.innerHTML = "";
+  } else {
+    aText.innerText = "Answer is not found";
+    linkBox.innerHTML =
+      `<a href="https://www.google.com/search?q=${encodeURIComponent(q)}" target="_blank">
+       Click here to search on Google
+       </a>`;
+  }
+}
+
+function saveHistory(q) {
+  if (!history.includes(q)) {
+    history.unshift(q);
+    localStorage.setItem("msearchHistory", JSON.stringify(history));
+  }
+}
+
+function toggleHistory() {
+  const box = document.getElementById("historyBox");
+  box.style.display = box.style.display === "block" ? "none" : "block";
+  renderHistory();
+}
+
+function renderHistory() {
+  const box = document.getElementById("historyBox");
+  box.innerHTML = "<b>Search History</b><br><br>";
+  history.forEach(item => {
+    box.innerHTML += `<div class="history-item">${item}</div>`;
+  });
+}
+
+function clearHistory() {
+  history = [];
+  localStorage.removeItem("msearchHistory");
+  document.getElementById("historyBox").innerHTML = "";
+}
+</script>
 
 </body>
-      </html>
+</html>
