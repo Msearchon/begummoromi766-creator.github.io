@@ -6,183 +6,187 @@
 <title>M Search</title>
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #fff;
-  text-align: center;
+body{
+    margin:0;
+    padding:0;
+    font-family: Arial, sans-serif;
+    background:#ffffff;
 }
-
-.logo {
-  margin-top: 40px;
-  font-size: 40px;
-  font-weight: bold;
+header{
+    text-align:center;
+    padding:20px 10px 10px;
 }
-.logo span { color: red; }
-
-.search-box {
-  margin: 20px auto;
-  width: 90%;
-  max-width: 400px;
-  display: flex;
-  border: 1px solid #ddd;
-  border-radius: 25px;
-  padding: 8px;
+header h1{
+    color:red;
+    font-size:34px;
+    margin:0;
 }
-
-.search-box input {
-  flex: 1;
-  border: none;
-  outline: none;
-  font-size: 16px;
-  padding: 10px;
+#container{
+    max-width:500px;
+    margin:auto;
+    padding:15px;
 }
-
-.search-box button {
-  border: none;
-  background: #4285f4;
-  color: white;
-  padding: 10px 18px;
-  border-radius: 20px;
+input{
+    width:100%;
+    padding:16px;
+    font-size:18px;
+    border:1px solid #ddd;
+    border-radius:30px;
+    outline:none;
 }
-
-.actions {
-  margin-top: 10px;
+input:focus{
+    border-color:#4285f4;
 }
-
-.actions button {
-  border: none;
-  background: #f1f1f1;
-  padding: 8px 14px;
-  border-radius: 15px;
-  margin: 5px;
+button{
+    width:100%;
+    margin-top:12px;
+    padding:14px;
+    font-size:18px;
+    border:none;
+    border-radius:30px;
+    cursor:pointer;
 }
-
-.result-box {
-  width: 90%;
-  max-width: 420px;
-  margin: 25px auto;
-  text-align: left;
-  display: none;
+#searchBtn{
+    background:linear-gradient(90deg, green, blue, red);
+    color:white;
 }
-
-.question {
-  color: red;
-  font-weight: bold;
+#answer{
+    margin-top:20px;
+    font-size:20px;
+    line-height:1.5;
 }
-
-.answer {
-  margin-top: 6px;
-  font-size: 16px;
+#link{
+    display:none;
+    margin-top:10px;
+    font-size:16px;
+    color:#1a73e8;
+    text-decoration:none;
 }
-
-.link {
-  margin-top: 10px;
+#historyBox{
+    display:none;
+    margin-top:20px;
+    border-top:1px solid #ddd;
+    padding-top:10px;
 }
-
-.link a {
-  color: blue;
-  text-decoration: underline;
+.history-item{
+    padding:12px;
+    border-bottom:1px solid #eee;
+    cursor:pointer;
 }
-
-.history-box {
-  width: 90%;
-  max-width: 420px;
-  margin: 20px auto;
-  text-align: left;
-  display: none;
+.history-item:hover{
+    background:#f5f5f5;
 }
-
-.history-item {
-  padding: 8px;
-  border-bottom: 1px solid #ddd;
-  font-size: 14px;
+#clearBtn{
+    background:red;
+    color:white;
+    margin-top:10px;
+}
+#bottomBar{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    background:#fff;
+    border-top:1px solid #ddd;
+    padding:10px;
+}
+#historyBtn{
+    background:#f1f1f1;
 }
 </style>
 </head>
 
 <body>
 
-<div class="logo"><span>M</span> Search</div>
+<header>
+  <h1>M Search</h1>
+</header>
 
-<div class="search-box">
-  <input type="text" id="query" placeholder="Search here..." />
-  <button onclick="search()">Search</button>
+<div id="container">
+
+<input id="q" placeholder="Search here">
+
+<button id="searchBtn" onclick="search()">Search</button>
+
+<div id="answer"></div>
+<a id="link" target="_blank">🔍 Search on Google</a>
+
+<div id="historyBox">
+    <h3>Search History</h3>
+    <div id="historyList"></div>
+    <button id="clearBtn" onclick="clearHistory()">Clear History</button>
 </div>
 
-<div class="actions">
-  <button onclick="toggleHistory()">History</button>
-  <button onclick="clearHistory()">Clear History</button>
 </div>
 
-<div class="result-box" id="result">
-  <div class="question" id="qText"></div>
-  <div class="answer" id="aText"></div>
-  <div class="link" id="linkBox"></div>
+<div id="bottomBar">
+  <button id="historyBtn" onclick="toggleHistory()">History</button>
 </div>
-
-<div class="history-box" id="historyBox"></div>
 
 <script>
 const data = {
-  "what is google": "Google is a search engine.",
-  "what is ui": "UI means User Interface.",
-  "what is software": "Software is a computer program."
+  "what is google":"Google is a search engine.",
+  "what is python":"Python is a programming language.",
+  "what is computer":"Computer is an electronic machine.",
+  "what is internet":"Internet is a global network."
 };
 
-let history = JSON.parse(localStorage.getItem("msearchHistory")) || [];
+let history = JSON.parse(localStorage.getItem("msearch_history")) || [];
 
-function search() {
-  const q = document.getElementById("query").value.trim().toLowerCase();
-  if (!q) return;
+function saveHistory(q){
+  if(!history.includes(q)){
+    history.unshift(q);
+    localStorage.setItem("msearch_history", JSON.stringify(history));
+  }
+}
+
+function search(){
+  const q = document.getElementById("q").value.toLowerCase().trim();
+  const ans = document.getElementById("answer");
+  const link = document.getElementById("link");
+
+  link.style.display="none";
+  if(!q){ ans.innerText=""; return; }
 
   saveHistory(q);
+  renderHistory();
 
-  const result = document.getElementById("result");
-  const qText = document.getElementById("qText");
-  const aText = document.getElementById("aText");
-  const linkBox = document.getElementById("linkBox");
-
-  result.style.display = "block";
-  qText.innerText = "Q: " + q;
-
-  if (data[q]) {
-    aText.innerText = data[q];
-    linkBox.innerHTML = "";
-  } else {
-    aText.innerText = "Answer is not found";
-    linkBox.innerHTML =
-      `<a href="https://www.google.com/search?q=${encodeURIComponent(q)}" target="_blank">
-       Click here to search on Google
-       </a>`;
+  if(data[q]){
+    ans.innerText = data[q];
+    ans.style.color = ["red","blue","green"][Math.floor(Math.random()*3)];
+  }else{
+    ans.innerText = "Answer not found";
+    ans.style.color = "black";
+    link.style.display="block";
+    link.href="https://www.google.com/search?q="+encodeURIComponent(q);
   }
 }
 
-function saveHistory(q) {
-  if (!history.includes(q)) {
-    history.unshift(q);
-    localStorage.setItem("msearchHistory", JSON.stringify(history));
-  }
-}
-
-function toggleHistory() {
+function toggleHistory(){
   const box = document.getElementById("historyBox");
-  box.style.display = box.style.display === "block" ? "none" : "block";
+  box.style.display = box.style.display==="none" ? "block" : "none";
   renderHistory();
 }
 
-function renderHistory() {
-  const box = document.getElementById("historyBox");
-  box.innerHTML = "<b>Search History</b><br><br>";
-  history.forEach(item => {
-    box.innerHTML += `<div class="history-item">${item}</div>`;
+function renderHistory(){
+  const list = document.getElementById("historyList");
+  list.innerHTML="";
+  history.forEach(q=>{
+    const div = document.createElement("div");
+    div.className="history-item";
+    div.innerText=q;
+    div.onclick=()=>{
+      document.getElementById("q").value=q;
+      search();
+    };
+    list.appendChild(div);
   });
 }
 
-function clearHistory() {
-  history = [];
-  localStorage.removeItem("msearchHistory");
-  document.getElementById("historyBox").innerHTML = "";
+function clearHistory(){
+  history=[];
+  localStorage.removeItem("msearch_history");
+  renderHistory();
 }
 </script>
 
